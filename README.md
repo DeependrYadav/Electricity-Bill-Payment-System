@@ -12,12 +12,15 @@
 * View all consumer.
 * Add new bills.  
 * View all pending payments.  
+* View all complains.
+* Update status of complain.
 * Delete consumer.    
 
 ## Users Have Following Access for this app :-  
 * Login.  
 * View bill amount .
 * Pay bill amount.  
+* Raise a complain.
 
 **Database: A file named as tabel in Electricity-Billing-System folder filled with some dummy database.**
 

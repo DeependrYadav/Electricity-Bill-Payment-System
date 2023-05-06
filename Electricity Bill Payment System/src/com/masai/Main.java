@@ -17,26 +17,35 @@ import com.masai.service.ConsumerService;
 import com.masai.service.ConsumerServiceImpl;
 import com.masai.service.BillsService;
 import com.masai.service.BillsServiceImpl;
+import com.masai.service.ComplainService;
+import com.masai.service.ComplainServiceImpl;
 
 public class Main {
-	private static void adminFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,Map<Integer,Complain> complain)
-			throws InvalidCredentialsException {
+	private static void adminFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,
+			Map<Integer, Complain> complain) throws InvalidCredentialsException {
 
 		adminLogin(sc);
 
 		ConsumerService conServices = new ConsumerServiceImpl();
 		BillsService billsServices = new BillsServiceImpl();
+		ComplainService complainServices = new ComplainServiceImpl();
 		try {
 			int choice = 0;
 			do {
+				System.out.println("Press 0 for log out");
 				System.out.println("Press 1 for register new Consumer");
 				System.out.println("Press 2 view all Consumer");
 				System.out.println("Press 3 to view all Bills");
 				System.out.println("Press 4 to create bill of Consumer");
-				System.out.println("Press 5 for delete Consumer");
-				System.out.println("Press 6 for log out");
+				System.out.println("Press 5 to view all complains");
+				System.out.println("Press 6 to change status of complain");
+				System.out.println("Press 7 for delete Consumer");
 				choice = sc.nextInt();
 				switch (choice) {
+				case 0:{
+					System.out.println("Admin has successfully logout");
+					break;					
+				}
 				case 1: {
 					consumerRegister(sc, consumer, bills);
 					break;
@@ -60,17 +69,21 @@ public class Main {
 					break;
 				}
 				case 5: {
-					deleteConsumer(sc, consumer, bills);
+					complainServices.viewAllComplain(complain);
 					break;
 				}
-				case 6: {
-					System.out.println("Admin has successfully logout");
+				case 6:{
+					updateStatusOfComplain(sc,complain);
 					break;
+				}
+				case 7: {
+					deleteConsumer(sc, consumer, bills);
+					break;					
 				}
 				default:
 					throw new InvalidCredentialsException("Please choose correct option");
 				}
-			} while (choice != 6);
+			} while (choice != 0);
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -187,12 +200,28 @@ public class Main {
 		System.out.println("Bill created successfully");
 	}
 
-	private static void consumerFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,Map<Integer,Complain> complain)
-			throws InvalidCredentialsException {
+	public static void updateStatusOfComplain(Scanner sc, Map<Integer,Complain> complain) throws InvalidCredentialsException {
+		System.out.println("Write the complain ID");
+		
+		int complainId = sc.nextInt();
+		
+		System.out.println("Write the current status");
+		sc.nextLine();
+		String newStatus = sc.nextLine();
+		
+		ComplainService complainServices = new ComplainServiceImpl();
+		
+		complainServices.updateStatusOfComplain(complainId, newStatus, complain);
+		
+		System.out.println("Status updated successfully");
+	}
+	
+	private static void consumerFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,
+			Map<Integer, Complain> complain) throws InvalidCredentialsException {
 
 		ConsumerService conServices = new ConsumerServiceImpl();
 		BillsService billsServices = new BillsServiceImpl();
-
+		
 		System.out.println("please enter the following details to login");
 		System.out.println("please enter the email");
 		String email = sc.next();
@@ -206,10 +235,16 @@ public class Main {
 				System.out.println("press 1 for Pay Bill");
 				System.out.println("press 2 for see all bills");
 				System.out.println("Press 3 for unpaid bills");
-				System.out.println("press 4 for exit from the app");
+				System.out.println("Press 4 for raise a complain");
+				System.out.println("Press 5 for view all complains");
+				System.out.println("press 0 for exit from the app");
 
 				choice1 = sc.nextInt();
 				switch (choice1) {
+				case 0: {
+					System.out.println("Successfully exited from the system");
+					break;
+				}
 				case 1: {
 					payConsumerBill(sc, email, bills);
 					break;
@@ -223,14 +258,18 @@ public class Main {
 					break;
 				}
 				case 4: {
-					System.out.println("Successfully exited from the system");
+					raiseComplain(sc, email, consumer, complain);
+					break;
+				}
+				case 5:{
+					complainService(sc,complain);
 					break;
 				}
 				default:
 					throw new IllegalArgumentException("Please choose correct option from consumer");
 				}
 
-			} while (choice1 != 4);
+			} while (choice1 != 0);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -259,14 +298,41 @@ public class Main {
 		billsServices.payBill(email, billList, amt);
 	}
 
+	public static void raiseComplain(Scanner sc, String email, Map<String, Consumer> consumer, Map<Integer, Complain> complain) {
+
+		ComplainService complainService = new ComplainServiceImpl();
+
+		sc.nextLine();
+		System.out.println("Write what is your issue");
+		String complainIssue = sc.nextLine();
+
+		int id = (int) (Math.random() * 1000000);
+		String name = consumer.get(email).getUsername();
+		String status = "Pending";
+		
+		Complain comp = new Complain(id, name, email, complainIssue, status);
+
+		complainService.raiseComplain(comp, complain);
+		System.out.println("Your Complain Id : " + id);
+		System.out.println("Issue raised successfully");
+	}
+
+	public static void complainService(Scanner sc, Map<Integer,Complain> complain) throws InvalidCredentialsException {
+		System.out.println("Write complain ID");
+		int complainId = sc.nextInt();
+		ComplainService complainService = new ComplainServiceImpl();
+		
+		complainService.viewComplain(complainId, complain);
+	}
 	public static void main(String[] args) {
 
 		Map<String, Consumer> consumer = CheckFile.consumerFile();
 		List<Bills> bills = CheckFile.bills();
-		Map<Integer,Complain> complain = CheckFile.complainFile();
+		Map<Integer, Complain> complain = CheckFile.complainFile();
 
 		System.out.println(consumer);
 		System.out.println(bills);
+		System.out.println(complain);
 
 		Scanner sc = new Scanner(System.in);
 
@@ -285,6 +351,7 @@ public class Main {
 				}
 				case 2: {
 					consumerFunctionality(sc, consumer, bills, complain);
+					break;
 				}
 				case 0: {
 					System.out.println("Successfully exited from the app");
@@ -311,11 +378,10 @@ public class Main {
 				boos.close();
 
 				ObjectOutputStream complainOutput = new ObjectOutputStream(new FileOutputStream("complainFile.ser"));
-				complainOutput.writeObject(complainOutput);
+				complainOutput.writeObject(complain);
 				complainOutput.flush();
 				complainOutput.close();
-				
-				
+
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}

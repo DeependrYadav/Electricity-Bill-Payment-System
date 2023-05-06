@@ -1,6 +1,7 @@
 package com.masai;
 
 import java.io.FileOutputStream;
+
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Scanner;
 
 import com.masai.entities.Consumer;
 import com.masai.entities.Bills;
+import com.masai.entities.Complain;
 import com.masai.utility.CheckFile;
 import com.masai.exceptions.*;
 import com.masai.service.ConsumerService;
@@ -17,7 +19,7 @@ import com.masai.service.BillsService;
 import com.masai.service.BillsServiceImpl;
 
 public class Main {
-	private static void adminFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills)
+	private static void adminFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,Map<Integer,Complain> complain)
 			throws InvalidCredentialsException {
 
 		adminLogin(sc);
@@ -30,8 +32,9 @@ public class Main {
 				System.out.println("Press 1 for register new Consumer");
 				System.out.println("Press 2 view all Consumer");
 				System.out.println("Press 3 to view all Bills");
-				System.out.println("Press 4 for delete Consumer");
-				System.out.println("Press 5 for log out");
+				System.out.println("Press 4 to create bill of Consumer");
+				System.out.println("Press 5 for delete Consumer");
+				System.out.println("Press 6 for log out");
 				choice = sc.nextInt();
 				switch (choice) {
 				case 1: {
@@ -53,17 +56,21 @@ public class Main {
 					break;
 				}
 				case 4: {
-					deleteConsumer(sc, consumer,bills);
+					createBill(sc, consumer, bills);
 					break;
 				}
 				case 5: {
+					deleteConsumer(sc, consumer, bills);
+					break;
+				}
+				case 6: {
 					System.out.println("Admin has successfully logout");
 					break;
 				}
 				default:
 					throw new InvalidCredentialsException("Please choose correct option");
 				}
-			} while (choice != 5);
+			} while (choice != 6);
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -108,10 +115,10 @@ public class Main {
 
 		LocalDateTime dateTime = LocalDateTime.now();
 
-		Bills conBill = new Bills(email, (int)( Math.random() * 1000) / 1.0, dateTime);
+		Bills conBill = new Bills(email, 765, dateTime, "New connection charge");
 
 		bills.add(conBill);
-		System.out.println(bills);
+//		System.out.println(bills);
 
 		Consumer cons = new Consumer(name, pass, address, email, conBill);
 
@@ -120,7 +127,8 @@ public class Main {
 		System.out.println("Successfully register");
 	}
 
-	public static void deleteConsumer(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills) throws InvalidCredentialsException {
+	public static void deleteConsumer(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills)
+			throws InvalidCredentialsException {
 
 		System.out.println("Enter Consumer email ID");
 
@@ -129,13 +137,13 @@ public class Main {
 		if (consumer.containsKey(email)) {
 
 			consumer.remove(email);
-			
-			for(int i = 0; i < bills.size(); i++) {
-				if(bills.get(i).getEmail().equals(email)) {
+
+			for (int i = 0; i < bills.size(); i++) {
+				if (bills.get(i).getEmail().equals(email)) {
 					bills.remove(i);
 				}
 			}
-			
+
 			System.out.println("Account deleted successfully");
 
 		} else {
@@ -144,7 +152,42 @@ public class Main {
 
 	}
 
-	private static void consumerFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills)
+	public static void createBill(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills) throws BillsException {
+
+		System.out.println("Enter the email of consumer");
+		String email = sc.next();
+		if (!consumer.containsKey(email)) {
+			throw new BillsException("Please put the correct email");
+		}
+		System.out.println("Enter the bill amount");
+		int amt = sc.nextInt();
+		LocalDateTime dateTime = LocalDateTime.now();
+//		LocalDateTime dateTime = LocalDateTime.parse(LocalDateTime.now(), DateTimeFormatter.ofPattern("dd-MMM-yyyy HH-mm-ss"));
+//		dateTime = DateTimeFormatter.ofPattern();
+		String billType = "";
+		System.out.println("Choose bill Type");
+		System.out.println("Press 1 for Monthly bill charge");
+		System.out.println("Press 2 for yearly mantinance charge");
+		System.out.println("Press 3 for Service charge");
+
+		int chooseType = sc.nextInt();
+		if (chooseType == 1)
+			billType = "Monthly bill charge";
+		else if (chooseType == 2)
+			billType = "Yearly mantinance charge";
+		else if (chooseType == 3)
+			billType = "Service charge";
+		else
+			throw new IllegalArgumentException("Please choose correct option");
+
+		Bills conBill = new Bills(email, amt, dateTime, billType);
+
+		bills.add(conBill);
+
+		System.out.println("Bill created successfully");
+	}
+
+	private static void consumerFunctionality(Scanner sc, Map<String, Consumer> consumer, List<Bills> bills,Map<Integer,Complain> complain)
 			throws InvalidCredentialsException {
 
 		ConsumerService conServices = new ConsumerServiceImpl();
@@ -175,8 +218,9 @@ public class Main {
 					billsServices.viewConsumerBills(email, bills);
 					break;
 				}
-				case 3:{
+				case 3: {
 					billsServices.viewConsumerUnpaidBills(email, bills);
+					break;
 				}
 				case 4: {
 					System.out.println("Successfully exited from the system");
@@ -219,6 +263,7 @@ public class Main {
 
 		Map<String, Consumer> consumer = CheckFile.consumerFile();
 		List<Bills> bills = CheckFile.bills();
+		Map<Integer,Complain> complain = CheckFile.complainFile();
 
 		System.out.println(consumer);
 		System.out.println(bills);
@@ -235,14 +280,15 @@ public class Main {
 				choice = sc.nextInt();
 				switch (choice) {
 				case 1: {
-					adminFunctionality(sc, consumer, bills);
+					adminFunctionality(sc, consumer, bills, complain);
 					break;
 				}
 				case 2: {
-					consumerFunctionality(sc, consumer, bills);
+					consumerFunctionality(sc, consumer, bills, complain);
 				}
 				case 0: {
 					System.out.println("Successfully exited from the app");
+					break;
 				}
 				default:
 					throw new IllegalArgumentException("Unexpected value: " + choice);
@@ -256,13 +302,20 @@ public class Main {
 			try {
 				ObjectOutputStream coos = new ObjectOutputStream(new FileOutputStream("consumerFile.ser"));
 				coos.writeObject(consumer);
+				coos.flush();
 				coos.close();
 //				System.out.println(consumer);
 				ObjectOutputStream boos = new ObjectOutputStream(new FileOutputStream("billsFile.ser"));
 				boos.writeObject(bills);
+				boos.flush();
 				boos.close();
-				
 
+				ObjectOutputStream complainOutput = new ObjectOutputStream(new FileOutputStream("complainFile.ser"));
+				complainOutput.writeObject(complainOutput);
+				complainOutput.flush();
+				complainOutput.close();
+				
+				
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}

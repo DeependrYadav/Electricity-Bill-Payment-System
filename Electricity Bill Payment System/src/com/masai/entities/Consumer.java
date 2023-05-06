@@ -66,7 +66,7 @@ public class Consumer implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Name = " + username + "  Password = " + password + "  Address=" + address + "  Email=" + email;
+		return "Name = " + username + ",  Password = " + password + ",  Address=" + address + ",  Email=" + email;
 	}
 
 }

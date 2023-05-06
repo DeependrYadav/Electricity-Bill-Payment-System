@@ -8,19 +8,29 @@ public class Bills implements Serializable {
 	private String email;
 	private double bill;
 	private LocalDateTime date;
+	private String category;
 
-	public Bills(String email,double bill, LocalDateTime date) {
+	public Bills(String email,double bill, LocalDateTime date,String category) {
 		super();
 		this.bill = bill;
 		this.date = date;
 		this.email = email;
+		this.category = category;
 	}
 	
 	@Override
 	public String toString() {
-		return "Email = "+ email +" bill = " + bill + " date = " + date;
+		return "Email = "+ email +", bill = " + bill + ", date = " + date + ", Bill Type = " + category;
 	}
 
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
 
 	public String getEmail() {
 		return email;

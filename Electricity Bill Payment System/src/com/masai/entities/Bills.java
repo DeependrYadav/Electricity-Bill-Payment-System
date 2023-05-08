@@ -20,7 +20,8 @@ public class Bills implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "Email = "+ email +", bill = " + bill + ", date = " + date + ", Bill Type = " + category;
+		return "Email = "+ email +", bill = " + bill + ", date = " + date + ", Bill Type = " + category+
+				"\n---------------------------------------------------------------------------------";
 	}
 
 

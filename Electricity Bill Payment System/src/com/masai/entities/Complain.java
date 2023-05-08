@@ -49,8 +49,9 @@ public class Complain implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ComplainId=" + complainId + ", consumerName=" + consumerName + ", consumerEmail="
-				+ consumerEmail + ", discription=" + discription +", Status of complain=" + status;
+		return  "ComplainId=" + complainId + ", consumerName=" + consumerName + ", consumerEmail="
+				+ consumerEmail + ", discription=" + discription +", Status of complain=" + status +
+				"\n---------------------------------------------------------------------------------";
 	}
 
 	

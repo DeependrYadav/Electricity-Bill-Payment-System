@@ -21,6 +21,7 @@
 * View bill amount .
 * Pay bill amount.  
 * Raise a complain.
+* View all complains.
 
 **Database: A file named as tabel in Electricity-Billing-System folder filled with some dummy database.**
 
